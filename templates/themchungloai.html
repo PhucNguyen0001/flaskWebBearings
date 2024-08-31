@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <img class="responsive-img" id="imagePreview"
+         src="{{ url_for('static', filename='img/default_pic.png') }}"/>
+    <form action="/themchungloai" method="post" id="submitThemCL" enctype="multipart/form-data">
+
+        <div class="mb-3">
+            <label for="formFile" class="form-label">Hình ảnh chủng loai</label>
+            <input class="form-control" type="file" id="formFile" name="pictureFile">
+            <label for="formFile" class="form-label">Tên chủng loại</label>
+            <input class="form-control" type="text" placeholder="Tên chủng loại" aria-label="default input example" name="categoryName">
+            <p id="warningMessage" style="color: red; display: none;">File không đúng định dạng ảnh!</p>
+            <input type="submit" name="" id="" value="Thêm chủng loại">
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block js %}
+    <script src="{{ url_for('static', filename='js/check_available_file_picture.js') }}"></script>
+{% endblock %}
