@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from database import *
 from base64forfiles import file_to_base64
+import io
+import openpyxl
 app = Flask(__name__)
 app.secret_key = 'your_secret_key_here'  # Add this line for flash messages
 
@@ -194,6 +196,50 @@ def suahangsx(manufacturer_id):
             flash(f"Lỗi: {e}", "error")
             return redirect(url_for('suahangsx', manufacturer_id=manufacturer_id))
     return render_template('suahangsx.html', manufacturer=manufacturer)
+
+
+@app.route('/upload_bearings', methods=['GET', 'POST'])
+def upload_bearings():
+    if request.method == 'GET':
+        # Lấy danh sách parameters, manufacturers và categories để hiển thị trên trang
+        parameters = Parameter.select()
+        manufacturers = Manufacturer.select()
+        categories = Category.select()
+        
+        return render_template('upload_bearings.html', 
+                               parameters=parameters, 
+                               manufacturers=manufacturers, 
+                               categories=categories)
+    
+    # POST method sẽ được xử lý sau
+    # elif request.method == 'POST':
+    #     # Xử lý upload file Excel
+    #     pass
+
+
+@app.route('/download_template')
+def download_template():
+    # Tạo một workbook mới
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    
+    # Thêm tiêu đề cột
+    headers = ['mã vòng', 'nhà sx', 'chủng loại', 'mô tả']
+    parameters = Parameter.select()
+    for param in parameters:
+        headers.append(f"{param.idParameter} - {param.describe}")
+    
+    ws.append(headers)
+    
+    # Lưu workbook vào buffer
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    buffer.seek(0)
+    
+    return send_file(buffer, 
+                     download_name='bearing_template.xlsx',
+                     as_attachment=True,
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 if __name__ == '__main__':

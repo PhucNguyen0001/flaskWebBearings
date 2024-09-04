@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Upload Bearings from Excel</h2>
+    <a href="{{ url_for('download_template') }}" class="btn btn-primary">Download Excel Template</a>
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('upload_bearings') }}">
+        <div class="mb-3">
+            <label for="excelFile" class="form-label">Choose Excel File</label>
+            <input class="form-control" type="file" id="excelFile" name="excelFile" accept=".xls,.xlsx" required>
+        </div>
+        <button type="submit" class="btn btn-success">Upload and Import</button>
+    </form>
+
+    <h3 class="mt-4">Excel File Structure</h3>
+    <p>Your Excel file should have the following columns:</p>
+    <ul>
+        <li>mã vòng</li>
+        <li>nhà sx (ID)</li>
+        <li>chủng loại (ID)</li>
+        <li>mô tả</li>
+        <li>Parameter columns (see below)</li>
+    </ul>
+
+    <h3>Available Manufacturers</h3>
+    <ul>
+    {% for manufacturer in manufacturers %}
+        <li>{{ manufacturer.manufacturerName }} (ID: {{ manufacturer.idManufacturer }})</li>
+    {% endfor %}
+    </ul>
+
+    <h3>Available Categories</h3>
+    <ul>
+    {% for category in categories %}
+        <li>{{ category.categoryName }} (ID: {{ category.idCategory }})</li>
+    {% endfor %}
+    </ul>
+
+    <h3>Available Parameters</h3>
+    <p>These parameter columns are included in the Excel template:</p>
+    <ul>
+    {% for parameter in parameters %}
+        <li>{{ parameter.idParameter }} - {{ parameter.describe }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}
