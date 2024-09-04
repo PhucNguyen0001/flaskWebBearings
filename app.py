@@ -1,10 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash
 from database import *
 from base64forfiles import file_to_base64
 app = Flask(__name__)
-
-
-
+app.secret_key = 'your_secret_key_here'  # Add this line for flash messages
 
 @app.route('/test')
 def test():
@@ -40,11 +38,14 @@ def themchungloai():
                 file_content = file.read()
                 image_str = f"data:image/{file.filename.split('.')[-1]};base64,{file_to_base64(file_content)}"
                 add_category(categoryName, image_str)
-                return "Thêm thành công"
+                flash("Thêm chủng loại thành công", "success")
+                return redirect(url_for('qlchungloai'))
             except Exception as e:
-                return f"Lỗi: {e}", 400
+                flash(f"Lỗi: {e}", "error")
+                return redirect(url_for('themchungloai'))
         else:
-            return "No file uploaded"
+            flash("No file uploaded", "error")
+            return redirect(url_for('themchungloai'))
     return render_template('themchungloai.html')
 
 
@@ -58,11 +59,14 @@ def themhangsx():
                 file_content = file.read()
                 image_str = f"data:image/{file.filename.split('.')[-1]};base64,{file_to_base64(file_content)}"
                 add_manufacturer(manufacturerName, image_str)
-                return "Thêm thành công"
+                flash("Thêm hãng sản xuất thành công", "success")
+                return redirect(url_for('qlhangsx'))
             except Exception as e:
-                return f"Lỗi: {e}", 400
+                flash(f"Lỗi: {e}", "error")
+                return redirect(url_for('themhangsx'))
         else:
-            return "No file uploaded"
+            flash("No file uploaded", "error")
+            return redirect(url_for('themhangsx'))
     return render_template('themhangsx.html')
 
 
@@ -93,9 +97,11 @@ def themvongbi():
             # Add bearing to database
             new_bearing = add_bearing(product_code, manufacturer_id, category_id, bearing_describe, image_str, parameters)
 
-            return "Thêm vòng bi thành công"
+            flash("Thêm vòng bi thành công", "success")
+            return redirect(url_for('qlvongbi'))
         except Exception as e:
-            return f"Lỗi: {e}", 400
+            flash(f"Lỗi: {e}", "error")
+            return redirect(url_for('themvongbi'))
 
     return render_template('themvongbi.html', 
                            listCategory=Category.select(Category.idCategory, Category.categoryName),
@@ -131,9 +137,11 @@ def suavongbi(bearing_id):
             # Update bearing in database
             update_bearing(bearing_id, product_code, manufacturer_id, category_id, bearing_describe, image_str, parameters)
 
-            return "Cập nhật vòng bi thành công"
+            flash("Cập nhật vòng bi thành công", "success")
+            return redirect(url_for('qlvongbi'))
         except Exception as e:
-            return f"Lỗi: {e}", 400
+            flash(f"Lỗi: {e}", "error")
+            return redirect(url_for('suavongbi', bearing_id=bearing_id))
 
     # Create parameter_dict for GET request
     parameter_dict = {bp.idParameter.idParameter: bp.value for bp in bearing.parameters}
@@ -159,9 +167,11 @@ def suachungloai(category_id):
                 category.categoryPicture = image_str
             category.categoryName = categoryName
             category.save()
-            return "Cập nhật thành công"
+            flash("Cập nhật chủng loại thành công", "success")
+            return redirect(url_for('qlchungloai'))
         except Exception as e:
-            return f"Lỗi: {e}", 400
+            flash(f"Lỗi: {e}", "error")
+            return redirect(url_for('suachungloai', category_id=category_id))
     return render_template('suachungloai.html', category=category)
 
 
@@ -178,9 +188,11 @@ def suahangsx(manufacturer_id):
                 manufacturer.manufacturerPicture = image_str
             manufacturer.manufacturerName = manufacturerName
             manufacturer.save()
-            return "Cập nhật thành công"
+            flash("Cập nhật hãng sản xuất thành công", "success")
+            return redirect(url_for('qlhangsx'))
         except Exception as e:
-            return f"Lỗi: {e}", 400
+            flash(f"Lỗi: {e}", "error")
+            return redirect(url_for('suahangsx', manufacturer_id=manufacturer_id))
     return render_template('suahangsx.html', manufacturer=manufacturer)
 
 
