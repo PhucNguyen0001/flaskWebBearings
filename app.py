@@ -211,11 +211,49 @@ def upload_bearings():
                                manufacturers=manufacturers, 
                                categories=categories)
     
-    # POST method sẽ được xử lý sau
-    # elif request.method == 'POST':
-    #     # Xử lý upload file Excel
-    #     pass
+    elif request.method == 'POST':
+        try:
+            file = request.files['excelFile']  # Change 'file' to 'excelFile'
+            if file and file.filename.endswith('.xlsx'):
+                wb = openpyxl.load_workbook(file)
+                ws = wb.active
 
+                headers = [cell.value for cell in ws[1]]
+                parameter_columns = {col: headers.index(col) for col in headers if ' - ' in col}
+
+                for row in ws.iter_rows(min_row=2, values_only=True):
+                    product_code = row[headers.index('mã vòng')]
+                    manufacturer_id = int(row[headers.index('nhà sx')])  # Change to ID
+                    category_id = int(row[headers.index('chủng loại')])  # Change to ID
+                    description = row[headers.index('mô tả')]
+
+                    # Collect parameters
+                    parameters = {}
+                    for col, index in parameter_columns.items():
+                        parameter_id = int(col.split(' - ')[0])
+                        value = row[index]
+                        if value is not None:
+                            parameters[parameter_id] = float(value)
+
+                    # Add bearing with collected parameters
+                    bearing = add_bearing(product_code, manufacturer_id, category_id, description, None, parameters)
+
+                    # Add parameters
+                    for col, index in parameter_columns.items():
+                        parameter_id = int(col.split(' - ')[0])
+                        value = row[index]
+                        if value is not None:
+                            BearingParameter.create(idBearing=bearing, idParameter=parameter_id, value=float(value))
+
+                flash("Tải lên và thêm vòng bi thành công", "success")
+            else:
+                flash("Vui lòng tải lên file Excel (.xlsx)", "error")
+        except Exception as e:
+            flash(f"Lỗi khi xử lý file: {str(e)}", "error")
+
+        return redirect(url_for('upload_bearings'))
+
+    # ... (rest of the function remains the same) ...
 
 @app.route('/download_template')
 def download_template():
